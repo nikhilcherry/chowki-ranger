@@ -1,45 +1,69 @@
-export enum LogLevel {
-  INFO = 0,
-  WARN = 1,
-  ERROR = 2,
+import fs from 'fs';
+import { formatTime } from './utils/time.js';
+
+export interface ILogger {
+  log(module: string, message: string): void;
+  arrow(): void;
+  info(module: string, message: string): void;
+  warn(module: string, message: string): void;
+  error(module: string, error: any): void;
 }
 
-/**
- * Structured logger to replace scattered console.logs with formatted level-based outputs.
- */
-export class Logger {
-  private readonly nodeId: string;
-  private readonly minLevel: LogLevel;
+export class Logger implements ILogger {
+  private logFilePath: string;
 
-  constructor(nodeId: string, minLevel: LogLevel = LogLevel.INFO) {
-    this.nodeId = nodeId;
-    this.minLevel = minLevel;
+  constructor(logFilePath: string) {
+    this.logFilePath = logFilePath;
   }
 
-  /**
-   * Logs an informational message.
-   */
-  public info(message: string, ...args: unknown[]): void {
-    if (this.minLevel <= LogLevel.INFO) {
-      console.log(`[INFO] [${this.nodeId}] ${message}`, ...args);
+  private writeToFile(text: string): void {
+    try {
+      fs.appendFileSync(this.logFilePath, text + '\n', 'utf8');
+    } catch (err) {
+      console.error(`[Logger Error] Failed writing to log file: ${err}`);
     }
   }
 
-  /**
-   * Logs a warning message.
-   */
-  public warn(message: string, ...args: unknown[]): void {
-    if (this.minLevel <= LogLevel.WARN) {
-      console.warn(`[WARN] [${this.nodeId}] ${message}`, ...args);
-    }
+  log(module: string, message: string): void {
+    const time = formatTime(new Date());
+    const formattedConsole = `\x1b[36m${time}\x1b[0m [\x1b[33m${module}\x1b[0m] ${message}`;
+    const formattedFile = `${time} [${module}] ${message}`;
+    
+    console.log(formattedConsole);
+    this.writeToFile(formattedFile);
   }
 
-  /**
-   * Logs an error message.
-   */
-  public error(message: string, ...args: unknown[]): void {
-    if (this.minLevel <= LogLevel.ERROR) {
-      console.error(`[ERROR] [${this.nodeId}] ${message}`, ...args);
-    }
+  arrow(): void {
+    const formattedConsole = `  \x1b[32m↓\x1b[0m`;
+    console.log(formattedConsole);
+    this.writeToFile(`  ↓`);
+  }
+
+  info(module: string, message: string): void {
+    const time = formatTime(new Date());
+    const formattedConsole = `\x1b[36m${time}\x1b[0m [\x1b[34m${module}\x1b[0m] \x1b[32m${message}\x1b[0m`;
+    const formattedFile = `${time} [${module}] INFO: ${message}`;
+    
+    console.log(formattedConsole);
+    this.writeToFile(formattedFile);
+  }
+
+  warn(module: string, message: string): void {
+    const time = formatTime(new Date());
+    const formattedConsole = `\x1b[36m${time}\x1b[0m [\x1b[35m${module}\x1b[0m] \x1b[33mWARN: ${message}\x1b[0m`;
+    const formattedFile = `${time} [${module}] WARN: ${message}`;
+    
+    console.warn(formattedConsole);
+    this.writeToFile(formattedFile);
+  }
+
+  error(module: string, error: any): void {
+    const time = formatTime(new Date());
+    const errMsg = error instanceof Error ? error.message : String(error);
+    const formattedConsole = `\x1b[36m${time}\x1b[0m [\x1b[31m${module}\x1b[0m] \x1b[31mERROR: ${errMsg}\x1b[0m`;
+    const formattedFile = `${time} [${module}] ERROR: ${errMsg}`;
+    
+    console.error(formattedConsole);
+    this.writeToFile(formattedFile);
   }
 }

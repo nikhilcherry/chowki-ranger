@@ -1,81 +1,32 @@
-import * as fs from 'fs';
-import * as path from 'path';
+import dotenv from 'dotenv';
+import path from 'path';
+import { Config } from './types/Config.js';
 
-export interface PeerConfig {
-  id: string;
-  host: string;
-  port: number;
-}
+dotenv.config();
 
-export interface ChowkiConfig {
-  id: string;
-  port: number;
-  peers: PeerConfig[];
-  loraLoss: number;
-}
+const DEFAULT_LAT = 44.33; // Grand Teton Ranger Station coords
+const DEFAULT_LON = -110.79;
 
-/**
- * ConfigLoader is responsible for loading and validating the node configuration.
- * It ensures no other modules load JSON files or read environment variables directly.
- */
-export class ConfigLoader {
-  private readonly config: ChowkiConfig;
+export const loadConfig = (): Config => {
+  const geminiApiKey = process.env.GEMINI_API_KEY || '';
+  const modelName = process.env.MODEL_NAME || 'gemini-2.5-flash';
+  
+  const inboxDir = path.resolve(process.env.INBOX_DIR || 'mesh-out');
+  const outboxDir = path.resolve(process.env.OUTBOX_DIR || 'outbox');
+  const meshInDir = path.resolve(process.env.MESH_IN_DIR || 'mesh-in');
+  
+  const weatherLat = parseFloat(process.env.WEATHER_LAT || '') || DEFAULT_LAT;
+  const weatherLon = parseFloat(process.env.WEATHER_LON || '') || DEFAULT_LON;
+  const logFile = path.resolve(process.env.LOG_FILE || 'ranger.log');
 
-  constructor(configFilePath?: string) {
-    const filePath = configFilePath || path.resolve(process.cwd(), 'chowki.config.json');
-    let fileConfig: { id: string; port: number; peers: PeerConfig[] };
-
-    try {
-      const data = fs.readFileSync(filePath, 'utf-8');
-      fileConfig = JSON.parse(data);
-    } catch (error) {
-      throw new Error(`Failed to load configuration from ${filePath}: ${(error as Error).message}`);
-    }
-
-    // Validate the parsed config structure
-    if (!fileConfig.id || typeof fileConfig.id !== 'string') {
-      throw new Error("Invalid configuration: 'id' is required and must be a string.");
-    }
-    if (typeof fileConfig.port !== 'number') {
-      throw new Error("Invalid configuration: 'port' is required and must be a number.");
-    }
-    if (!Array.isArray(fileConfig.peers)) {
-      throw new Error("Invalid configuration: 'peers' must be an array.");
-    }
-
-    for (const peer of fileConfig.peers) {
-      if (!peer.id || typeof peer.id !== 'string') {
-        throw new Error("Invalid peer configuration: 'id' must be a string.");
-      }
-      if (!peer.host || typeof peer.host !== 'string') {
-        throw new Error("Invalid peer configuration: 'host' must be a string.");
-      }
-      if (typeof peer.port !== 'number') {
-        throw new Error("Invalid peer configuration: 'port' must be a number.");
-      }
-    }
-
-    // Read lora packet loss constraint from environment, defaulting to 0.1
-    let loraLoss = 0.1;
-    if (process.env.LORA_LOSS !== undefined) {
-      const parsed = parseFloat(process.env.LORA_LOSS);
-      if (!isNaN(parsed) && parsed >= 0 && parsed <= 1) {
-        loraLoss = parsed;
-      }
-    }
-
-    this.config = {
-      id: fileConfig.id,
-      port: fileConfig.port,
-      peers: fileConfig.peers,
-      loraLoss,
-    };
-  }
-
-  /**
-   * Retrieves the loaded and validated configuration.
-   */
-  public getConfig(): ChowkiConfig {
-    return this.config;
-  }
-}
+  return {
+    geminiApiKey,
+    modelName,
+    inboxDir,
+    outboxDir,
+    meshInDir,
+    weatherLat,
+    weatherLon,
+    logFile,
+  };
+};

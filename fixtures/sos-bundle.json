@@ -1,0 +1,9 @@
+{
+  "id": "bundle-sos-001",
+  "senderId": "hiker-trekker-alpha",
+  "timestamp": 1782381203920,
+  "message": "URGENT: Broken ankle at Grand Teton marker 4. Heavy wind and cold temperatures uphill. Need evacuation assistance.",
+  "latitude": 44.332,
+  "longitude": -110.791,
+  "urgency": "sos"
+}

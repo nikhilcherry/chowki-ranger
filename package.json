@@ -1,26 +1,32 @@
 {
-  "name": "chowki-lora",
+  "name": "chowki-ranger",
   "version": "1.0.0",
-  "description": "Simulated LoRa transport over UDP with realistic constraints",
+  "description": "PS2 compliance repository for Chowki Ranger Station - Autonomous Orchestration",
   "type": "module",
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
+  "main": "./dist/main.js",
+  "types": "./dist/main.d.ts",
   "scripts": {
     "build": "tsc",
-    "test": "vitest run",
-    "test:watch": "vitest"
+    "start": "node dist/main.js",
+    "dev": "tsx src/main.ts",
+    "test": "vitest run"
   },
   "keywords": [
-    "lora",
-    "simulation",
-    "udp",
     "chowki",
-    "hackathon"
+    "ranger",
+    "orchestration",
+    "gemini",
+    "multi-agent"
   ],
   "author": "",
   "license": "ISC",
+  "dependencies": {
+    "@google/generative-ai": "^0.21.0",
+    "dotenv": "^16.4.5"
+  },
   "devDependencies": {
     "@types/node": "^20.11.0",
+    "tsx": "^4.7.1",
     "typescript": "^5.3.3",
     "vitest": "^1.2.1"
   }
