@@ -1,0 +1,27 @@
+{
+  "name": "chowki-lora",
+  "version": "1.0.0",
+  "description": "Simulated LoRa transport over UDP with realistic constraints",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "keywords": [
+    "lora",
+    "simulation",
+    "udp",
+    "chowki",
+    "hackathon"
+  ],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/node": "^20.11.0",
+    "typescript": "^5.3.3",
+    "vitest": "^1.2.1"
+  }
+}
