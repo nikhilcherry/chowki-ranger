@@ -20,14 +20,14 @@ async function bootstrap() {
   const fsTool = new FilesystemTool();
   const weatherTool = new WeatherTool();
 
-  // Validate API key first
-  if (!config.geminiApiKey) {
-    logger.error('System', 'GEMINI_API_KEY is not defined in environment or .env file!');
-    process.exit(1);
+  // Validate API key first - Support 'local' keyword for edge execution
+  const apiKey = config.geminiApiKey || 'local';
+  if (apiKey === 'local') {
+    logger.warn('System', 'GEMINI_API_KEY not provided or set to local. Defaulting to local on-device Gemma 4 model.');
   }
 
   try {
-    const geminiClient = new GeminiClient(config.geminiApiKey, config.modelName);
+    const geminiClient = new GeminiClient(apiKey, config.modelName);
 
     // Ensure system directories exist
     fsTool.ensureDir(config.inboxDir);

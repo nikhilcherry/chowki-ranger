@@ -22,6 +22,7 @@
   "license": "ISC",
   "dependencies": {
     "@google/generative-ai": "^0.21.0",
+    "chowki-ledger": "file:../chowki-ledger",
     "dotenv": "^16.4.5"
   },
   "devDependencies": {

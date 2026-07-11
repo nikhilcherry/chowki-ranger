@@ -5,6 +5,7 @@ import { TriageAgent } from '../agents/TriageAgent.js';
 import { CommsAgent } from '../agents/CommsAgent.js';
 import { WeatherAgent } from '../agents/WeatherAgent.js';
 import { Bundle } from '../types/Bundle.js';
+import { openLedger } from 'chowki-ledger';
 
 export class WorkflowManager {
   private triageAgent: TriageAgent;
@@ -88,6 +89,21 @@ export class WorkflowManager {
       this.logger.log('Manager', `Archived processed bundle to: ${archivePath}`);
     } catch (archiveErr) {
       this.logger.warn('WorkflowManager', `Failed to archive bundle file: ${archiveErr}`);
+    }
+
+    // 5. Merge processed bundle into SQLite Ledger for consistent distributed tracking
+    try {
+      const ledgerPath = path.join(process.cwd(), 'ranger-ledger.db');
+      const ledger = openLedger(ledgerPath);
+      ledger.mergeRemoteSnapshot({
+        hikers: [],
+        hazards: [],
+        bundles: [{ bundle: bundle as any, state: 'pending' }]
+      });
+      ledger.close();
+      this.logger.log('Manager', `Merged processed bundle into Ranger SQLite Ledger: ${ledgerPath}`);
+    } catch (ledgerErr: any) {
+      this.logger.warn('WorkflowManager', `Failed to merge into SQLite ledger: ${ledgerErr.message}`);
     }
 
     this.logger.log('Manager', 'Workflow complete');
