@@ -68,6 +68,32 @@ describe('Chowki Ranger Orchestration Unit Tests', () => {
     expect(result.actions).toContain('Notify family');
   });
 
+  it('TriageAgent fallback preserves high urgency instead of downgrading to MEDIUM', async () => {
+    vi.mocked(mockGeminiClient.generate).mockRejectedValue(new Error('Gemini API unavailable'));
+
+    const triageAgent = new TriageAgent(mockGeminiClient, mockLogger);
+    const result = await triageAgent.execute(sampleBundle); // sampleBundle.urgency === 'high'
+
+    expect(result.severity).toBe('HIGH');
+  });
+
+  it('TriageAgent fallback maps sos/critical/low urgency correctly too', async () => {
+    vi.mocked(mockGeminiClient.generate).mockRejectedValue(new Error('Gemini API unavailable'));
+    const triageAgent = new TriageAgent(mockGeminiClient, mockLogger);
+
+    const sos = await triageAgent.execute({ ...sampleBundle, urgency: 'sos' });
+    expect(sos.severity).toBe('CRITICAL');
+
+    const critical = await triageAgent.execute({ ...sampleBundle, urgency: 'critical' });
+    expect(critical.severity).toBe('CRITICAL');
+
+    const low = await triageAgent.execute({ ...sampleBundle, urgency: 'low' });
+    expect(low.severity).toBe('LOW');
+
+    const medium = await triageAgent.execute({ ...sampleBundle, urgency: 'medium' });
+    expect(medium.severity).toBe('MEDIUM');
+  });
+
   it('CommsAgent should write draft communication text files', async () => {
     vi.mocked(mockGeminiClient.generate).mockResolvedValue(
       JSON.stringify({

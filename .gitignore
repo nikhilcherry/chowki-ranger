@@ -7,3 +7,5 @@ mesh-out/
 mesh-in/
 outbox/
 ranger.log
+*.db
+.chowki-mule-test.json

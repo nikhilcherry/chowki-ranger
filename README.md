@@ -1,5 +1,12 @@
 # Chowki Ranger Station (`chowki-ranger`)
 
+<p align="center">
+  <img alt="node" src="https://img.shields.io/badge/node-%3E%3D20-339933">
+  <img alt="typescript" src="https://img.shields.io/badge/TypeScript-strict-3178C6">
+  <img alt="gemini" src="https://img.shields.io/badge/AI-Gemini_2.5_Flash-4285F4">
+  <img alt="license" src="https://img.shields.io/badge/license-MIT-green">
+</p>
+
 **PS2 (Autonomous Orchestration with Managed Agents) Compliance Repository**
 
 This repository is the production-grade, autonomous orchestration hub for **Project Chowki**, a Google DeepMind Hackathon project. It is fully compliant with the PS2 category and represents a **real, production-quality multi-agent orchestration system** powered by Google Gemini and Node.js.
@@ -31,22 +38,18 @@ The official `@google/generative-ai` package (v0.21.0) does not offer a producti
 
 ## 🧩 Architecture & Design
 
-```
-                     [ InboxWatcher ] (watches mesh-out/)
-                            │
-                            ▼
-                    [ WorkflowManager ]
-                            │
-         ┌──────────────────┼──────────────────┐
-         ▼                  ▼                  ▼
-   [ TriageAgent ]   [ CommsAgent ]    [ WeatherAgent ]
-         │                  │                  │
-         └────────┬─────────┴─────────┬────────┘
-                  ▼                   ▼
-           [ GeminiClient ]    [ WeatherTool ]
-                  │                   │
-                  ▼                   ▼
-           (Gemini API)         (Open-Meteo)
+```mermaid
+flowchart TD
+    W["InboxWatcher\n(watches mesh-out/)"] --> M["WorkflowManager"]
+    M --> T["TriageAgent"]
+    M --> C["CommsAgent"]
+    M --> WA["WeatherAgent"]
+    T --> GC["GeminiClient"]
+    C --> GC
+    WA --> WT["WeatherTool"]
+    GC --> G["Gemini API"]
+    WT --> OM["Open-Meteo API"]
+    WA -->|"advisory bundle"| IN["mesh-in/ (back into offline mesh)"]
 ```
 
 The system is designed with **SOLID Principles** and strict **Dependency Injection**:
@@ -186,3 +189,7 @@ Run the Vitest unit tests:
 ```bash
 npm test
 ```
+
+## License
+
+MIT

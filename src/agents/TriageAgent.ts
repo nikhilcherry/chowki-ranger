@@ -39,9 +39,17 @@ CRITICAL INSTRUCTIONS:
       return result;
     } catch (err) {
       this.logger.error('TriageAgent', err);
-      // Fallback in case of API failure
+      // Fallback in case of API failure: preserve the sender's own urgency
+      // signal instead of collapsing everything below sos/critical to
+      // MEDIUM -- a bundle declared 'high' by the sender must not be
+      // silently downgraded just because the triage model call failed.
+      const fallbackSeverity: TriageResult['severity'] =
+        bundle.urgency === 'sos' || bundle.urgency === 'critical' ? 'CRITICAL'
+        : bundle.urgency === 'high' ? 'HIGH'
+        : bundle.urgency === 'low' ? 'LOW'
+        : 'MEDIUM';
       return {
-        severity: bundle.urgency === 'sos' || bundle.urgency === 'critical' ? 'CRITICAL' : 'MEDIUM',
+        severity: fallbackSeverity,
         confidence: 0.5,
         actions: ['Manually dispatch ranger due to agent triage failure']
       };
